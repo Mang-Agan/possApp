@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('title')
-    Transaksi Penjualan
+Transaksi Penjualan
 @endsection
 
 @push('css')
@@ -32,8 +32,8 @@
 @endpush
 
 @section('breadcrumb')
-    @parent
-    <li class="active">Transaksi Penjaualn</li>
+@parent
+<li class="active">Transaksi Penjaualn</li>
 @endsection
 
 @section('content')
@@ -41,7 +41,7 @@
     <div class="col-lg-12">
         <div class="box">
             <div class="box-body">
-                    
+
                 <form class="form-produk">
                     @csrf
                     <div class="form-group row">
@@ -106,9 +106,7 @@
                             <div class="form-group row">
                                 <label for="diskon" class="col-lg-2 control-label">Diskon</label>
                                 <div class="col-lg-8">
-                                    <input type="number" name="diskon" id="diskon" class="form-control" 
-                                        value="{{ ! empty($memberSelected->id_member) ? $diskon : 0 }}" 
-                                        readonly>
+                                    <input type="number" name="diskon" id="diskon" class="form-control" value="{{ ! empty($memberSelected->id_member) ? $diskon : 0 }}" readonly>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -149,40 +147,59 @@
 <script>
     let table, table2;
 
-    $(function () {
+    $(function() {
         $('body').addClass('sidebar-collapse');
 
         table = $('.table-penjualan').DataTable({
-            responsive: true,
-            processing: true,
-            serverSide: true,
-            autoWidth: false,
-            ajax: {
-                url: '{{ route('transaksi.data', $id_penjualan) }}',
-            },
-            columns: [
-                {data: 'DT_RowIndex', searchable: false, sortable: false},
-                {data: 'kode_produk'},
-                {data: 'nama_produk'},
-                {data: 'harga_jual'},
-                {data: 'jumlah'},
-                {data: 'diskon'},
-                {data: 'subtotal'},
-                {data: 'aksi', searchable: false, sortable: false},
-            ],
-            dom: 'Brt',
-            bSort: false,
-            paginate: false
-        })
-        .on('draw.dt', function () {
-            loadForm($('#diskon').val());
-            setTimeout(() => {
-                $('#diterima').trigger('input');
-            }, 300);
-        });
+                responsive: true,
+                processing: true,
+                serverSide: true,
+                autoWidth: false,
+                ajax: {
+                    url: "{{ route('transaksi.data', $id_penjualan) }}",
+                },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        searchable: false,
+                        sortable: false
+                    },
+                    {
+                        data: 'kode_produk'
+                    },
+                    {
+                        data: 'nama_produk'
+                    },
+                    {
+                        data: 'harga_jual'
+                    },
+                    {
+                        data: 'jumlah'
+                    },
+                    {
+                        data: 'diskon'
+                    },
+                    {
+                        data: 'subtotal'
+                    },
+                    {
+                        data: 'aksi',
+                        searchable: false,
+                        sortable: false
+                    },
+                ],
+                dom: 'Brt',
+                bSort: false,
+                paginate: false
+            })
+            .on('draw.dt', function() {
+                loadForm($('#diskon').val());
+                setTimeout(() => {
+                    $('#diterima').trigger('input');
+                }, 300);
+            });
         table2 = $('.table-produk').DataTable();
 
-        $(document).on('input', '.quantity', function () {
+        $(document).on('input', '.quantity', function() {
             let id = $(this).data('id');
             let jumlah = parseInt($(this).val());
 
@@ -203,7 +220,7 @@
                     'jumlah': jumlah
                 })
                 .done(response => {
-                    $(this).on('mouseout', function () {
+                    $(this).on('mouseout', function() {
                         table.ajax.reload(() => loadForm($('#diskon').val()));
                     });
                 })
@@ -213,7 +230,7 @@
                 });
         });
 
-        $(document).on('input', '#diskon', function () {
+        $(document).on('input', '#diskon', function() {
             if ($(this).val() == "") {
                 $(this).val(0).select();
             }
@@ -221,18 +238,30 @@
             loadForm($(this).val());
         });
 
-        $('#diterima').on('input', function () {
+        $('#diterima').on('input', function() {
             if ($(this).val() == "") {
                 $(this).val(0).select();
             }
 
             loadForm($('#diskon').val(), $(this).val());
-        }).focus(function () {
+        }).focus(function() {
             $(this).select();
         });
 
-        $('.btn-simpan').on('click', function () {
-            $('.form-penjualan').submit();
+        $('.btn-simpan').on('click', function(e) {
+            e.preventDefault();
+            if (parseFloat($('#diterima').val()) < parseFloat($('#bayar').val())) {
+                let bayar = parseFloat($('#bayar').val());
+                let total_bayar = parseFloat($('#diterima').val());
+
+                console.log(bayar);
+                // console.log(typeof(total_bayar));
+                console.log(total_bayar);
+                alert('bayar tidak boleh kurang dari total bayar');
+                return false;
+            } else {
+                $('.form-penjualan').submit();
+            }
         });
     });
 
@@ -252,7 +281,8 @@
     }
 
     function tambahProduk() {
-        $.post('{{ route('transaksi.store') }}', $('.form-produk').serialize())
+        let url = "{{ route('transaksi.store') }}"
+        $.post(url, $('.form-produk').serialize())
             .done(response => {
                 $('#kode_produk').focus();
                 table.ajax.reload(() => loadForm($('#diskon').val()));
@@ -302,15 +332,16 @@
 
         $.get(`{{ url('/transaksi/loadform') }}/${diskon}/${$('.total').text()}/${diterima}`)
             .done(response => {
-                $('#totalrp').val('Rp. '+ response.totalrp);
-                $('#bayarrp').val('Rp. '+ response.bayarrp);
+                $('#totalrp').val('Rp. ' + response.totalrp);
+                $('#bayarrp').val('Rp. ' + response.bayarrp);
                 $('#bayar').val(response.bayar);
-                $('.tampil-bayar').text('Bayar: Rp. '+ response.bayarrp);
+
+                $('.tampil-bayar').text('Bayar: Rp. ' + response.bayarrp);
                 $('.tampil-terbilang').text(response.terbilang);
 
-                $('#kembali').val('Rp.'+ response.kembalirp);
+                $('#kembali').val('Rp.' + response.kembalirp);
                 if ($('#diterima').val() != 0) {
-                    $('.tampil-bayar').text('Kembali: Rp. '+ response.kembalirp);
+                    $('.tampil-bayar').text('Kembali: Rp. ' + response.kembalirp);
                     $('.tampil-terbilang').text(response.kembali_terbilang);
                 }
             })
