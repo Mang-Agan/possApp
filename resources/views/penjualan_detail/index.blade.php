@@ -253,10 +253,6 @@ Transaksi Penjualan
             if (parseFloat($('#diterima').val()) < parseFloat($('#bayar').val())) {
                 let bayar = parseFloat($('#bayar').val());
                 let total_bayar = parseFloat($('#diterima').val());
-
-                console.log(bayar);
-                // console.log(typeof(total_bayar));
-                console.log(total_bayar);
                 alert('bayar tidak boleh kurang dari total bayar');
                 return false;
             } else {
