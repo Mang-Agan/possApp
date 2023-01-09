@@ -46,8 +46,7 @@ Daftar Penjualan
             serverSide: true,
             autoWidth: false,
             ajax: {
-                url: '{{ route('
-                penjualan.data ') }}',
+                url: "{{route('penjualan.data')}}",
             },
             columns: [{
                     data: 'DT_RowIndex',
